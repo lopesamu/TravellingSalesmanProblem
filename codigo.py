@@ -10,20 +10,20 @@ cidade = np.loadtxt('cidades.csv', delimiter=',')
 def caixeiro_viajante():
 
     # criterio de parada
-    num_iter = 5000
+    num_iter = 5
 
     # taxa de crossover e de mutacao
     prob_crossover = 0.6
-    prob_mutacao = 0.2
+    prob_mutacao = 0.02
 
     # quantidade de cidades do problema
     num_cidades = len(cidade)
 
     # quantidade de individuos da população
-    qtde_individuos = 30
+    qtde_individuos = 6
 
     # gera população inicial
-    populacao = inicializar_populacao(qtde_individuos, num_cidades)
+    populacao = InitializePopulation(qtde_individuos, num_cidades)
 
     # avalia a populacao inicial
     f = avaliar_populacao(populacao, cidade, qtde_individuos, num_cidades)
@@ -51,10 +51,8 @@ def caixeiro_viajante():
         t += 1
 
 
-
-
-# gera a populacao inicial
-def inicializar_populacao(qtde_individuos, num_cidades):
+# gera a populacao inicial - TUDO CERTO
+def InitializePopulation(qtde_individuos, num_cidades):
     populacao_inicial = []
 
     # gerar um um caminho para cada individuo da população
@@ -193,4 +191,8 @@ def crossover(populacao, num_cidades, i):
     return populacao
 
 
-caixeiro_viajante()
+def main():
+    caixeiro_viajante()
+
+if __name__ == "__main__":
+    main()

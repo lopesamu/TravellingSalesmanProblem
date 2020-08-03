@@ -8,22 +8,22 @@ def TravellingSalesman(city, numIter, probCross, probMut, numInd):
     numCities = len(city)
 
     # initialize the population
-    populacao = InitializePopulation(numInd, numCities)
+    population = InitializePopulation(numInd, numCities)
 
-    # assess the initial population 
-    f = avaliar_populacao(populacao, city, numInd, numCities)
+    # evaluate the initial population 
+    f = EvaluatePopulation(population, city, numInd, numCities)
 
     t = 0
 
     while t < numIter:
         # selecionar os individuos mais aptos (menor distancia percorrida)
-        populacao = selecionar(populacao, f)
+        population = selecionar(population, f)
 
         # aplicar crossover e mutacao
-        populacao = reproduzir(populacao, numInd, numCities, probCross, probMut)
+        population = reproduzir(population, numInd, numCities, probCross, probMut)
 
-        # avaliar a populacao gerada
-        f = avaliar_populacao(populacao, city, numInd, numCities)
+        # avaliar a population gerada
+        f = EvaluatePopulation(population, city, numInd, numCities)
 
         if t == 0:
             menor_distancia = min(f)
@@ -52,40 +52,43 @@ def InitializePopulation(numInd, numCities):
     return initialPopulation
 
 
-# avalia a populacao por meio da distancia euclicidiana
-def avaliar_populacao(populacao, city, qtde_individuos, numCities):
+# function that calculates the route's distance - OK
+def RouteDistance(route, city, numCities):
+    distance = 0
+    for i in range(1, numCities):
+        aux = math.pow(city[route[i]][0] - city[route[i - 1]][0], 2) + math.pow(city[route[i]][1] - city[route[i - 1]][1], 2)
+        distance += math.sqrt(aux)
 
-    # f armazena a distancia total de cada individuo da populacao
+    # calculate the distance from the last city visited to the city of origin
+    aux = math.pow(city[route[numCities - 1]][0] - city[route[0]][0], 2) + math.pow(city[route[numCities - 1]][1] - city[route[0]][1], 2)
+    distance += math.sqrt(aux)
+
+    return distance
+
+
+# function that evaluates the population by means of euclidean distance
+def EvaluatePopulation(population, city, numInd, numCities):
+
+    # f stores the total distance of each individual from population
     f = []
 
-    #para cada individuo da populacao, calcular distancia total
-    for i in range(0, qtde_individuos):
-        seq_citys = populacao[i]
-        distancia = 0
-        for j in range(1, numCities):
-            aux = math.pow(city[seq_citys[j]][0] - city[seq_citys[j - 1]][0], 2) + \
-                  math.pow(city[seq_citys[j]][1] - city[seq_citys[j - 1]][1], 2)
-            distancia += math.sqrt(aux)
-
-        # calcular a distância da última city visitada com a city de origem
-        aux = math.pow(city[seq_citys[numCities - 1]][0] - city[seq_citys[0]][0], 2) + \
-              math.pow(city[seq_citys[numCities - 1]][1] - city[seq_citys[0]][1], 2)
-        distancia += math.sqrt(aux)
-
-        f.append(distancia)
+    # for each population[i], calculate the total distance
+    for i in range(0, numInd):
+        distance = RouteDistance(population[i], city, numCities)
+        f.append(distance)
 
     return f
 
 
 # seleciona os individuos mais aptos via torneio e elitismo
-def selecionar(populacao, f):
+def selecionar(population, f):
 
     # selecionar o individuo mais apto via elitismo
-    ind_nova_populacao = []
+    ind_nova_population = []
 
     for i in range(0, len(f)):
         if f[i] == min(f):
-            ind_nova_populacao.append(i)
+            ind_nova_population.append(i)
             break
 
     # selecionar os individuos mais aptos via torneio
@@ -105,54 +108,54 @@ def selecionar(populacao, f):
                 ind_menor = sorteio[j]
 
         # inserir o indice deste individuo em ind_nova_população
-        ind_nova_populacao.append(ind_menor)
+        ind_nova_population.append(ind_menor)
 
-    # gerar a nova populacao
-    nova_populacao = []
-    for i in range(0, len(ind_nova_populacao)):
-        nova_populacao.append(populacao[ind_nova_populacao[i]])
+    # gerar a nova population
+    nova_population = []
+    for i in range(0, len(ind_nova_population)):
+        nova_population.append(population[ind_nova_population[i]])
 
-    return nova_populacao
+    return nova_population
 
-# aplica crossover na populacao
-def reproduzir(populacao, qtde_individuos, numCities, probCross, probMut):
+# aplica crossover na population
+def reproduzir(population, numInd, numCities, probCross, probMut):
 
     # aplica crossover
     i = 0
-    while i < qtde_individuos:
+    while i < numInd:
         # gerar número aleatório r no intervalo [0, 1]
         r = random.random()
 
         # condição para haver crossover
         if r <= probCross:
-            populacao = crossover(populacao, numCities, i)
+            population = crossover(population, numCities, i)
 
         i += 2
 
     # aplica mutacao
-    for i in range(0, qtde_individuos):
+    for i in range(0, numInd):
         for j in range(0, 0, numCities):
             r = random.random()
 
             # condicao para haver mutacao
             if r <= probMut:
-                # seleciona duas citys da populacao
+                # seleciona duas citys da population
                 city1 = random.randint(0, numCities - 1)
                 city2 = random.randint(0, numCities - 1)
 
                 #permuta os indices de city1 e city 2 no individuo
-                populacao[i][city1] = city2
-                populacao[i][city2] = city1
+                population[i][city1] = city2
+                population[i][city2] = city1
 
-    return populacao
+    return population
 
 
-def crossover(populacao, numCities, i):
+def crossover(population, numCities, i):
 
     cp = random.randint(1, numCities - 2)
 
-    pai1 = populacao[i]
-    pai2 = populacao[i + 1]
+    pai1 = population[i]
+    pai2 = population[i + 1]
 
     # gerar os novos filhos
     aux = pai1
@@ -169,10 +172,10 @@ def crossover(populacao, numCities, i):
     for j in range(cp, numCities):
         pai2[j]= aux[j]
 
-    populacao[i] = pai1
-    populacao[i + 1] = pai2
+    population[i] = pai1
+    population[i + 1] = pai2
 
-    return populacao
+    return population
 
 
 def main():

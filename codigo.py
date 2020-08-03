@@ -1,46 +1,31 @@
-# bibliotecas utilizadas
+# libraries used
 import numpy as np
 import random
 import math
 
-# ler arquivo com as coordenadas das cidades - cada linha representa a coordenada de uma cidade
-cidade = np.loadtxt('cidades.csv', delimiter=',')
+def TravellingSalesman(city, numIter, probCross, probMut, numInd):
+    # number of problem's cities
+    numCities = len(city)
 
-# função principal
-def caixeiro_viajante():
+    # initialize the population
+    populacao = InitializePopulation(numInd, numCities)
 
-    # criterio de parada
-    num_iter = 5
+    # assess the initial population 
+    f = avaliar_populacao(populacao, city, numInd, numCities)
 
-    # taxa de crossover e de mutacao
-    prob_crossover = 0.6
-    prob_mutacao = 0.02
+    t = 0
 
-    # quantidade de cidades do problema
-    num_cidades = len(cidade)
-
-    # quantidade de individuos da população
-    qtde_individuos = 6
-
-    # gera população inicial
-    populacao = InitializePopulation(qtde_individuos, num_cidades)
-
-    # avalia a populacao inicial
-    f = avaliar_populacao(populacao, cidade, qtde_individuos, num_cidades)
-
-    t = 1
-
-    while t < num_iter:
+    while t < numIter:
         # selecionar os individuos mais aptos (menor distancia percorrida)
         populacao = selecionar(populacao, f)
 
         # aplicar crossover e mutacao
-        populacao = reproduzir(populacao, qtde_individuos, num_cidades, prob_crossover, prob_mutacao)
+        populacao = reproduzir(populacao, numInd, numCities, probCross, probMut)
 
         # avaliar a populacao gerada
-        f = avaliar_populacao(populacao, cidade, qtde_individuos, num_cidades)
+        f = avaliar_populacao(populacao, city, numInd, numCities)
 
-        if t == 1:
+        if t == 0:
             menor_distancia = min(f)
         else:
             if min(f) < menor_distancia:
@@ -51,41 +36,40 @@ def caixeiro_viajante():
         t += 1
 
 
-# gera a populacao inicial - TUDO CERTO
-def InitializePopulation(qtde_individuos, num_cidades):
-    populacao_inicial = []
+# Function that returns the initial population - OK
+def InitializePopulation(numInd, numCities):
+    initialPopulation = []
 
-    # gerar um um caminho para cada individuo da população
-    indice_cidades = []
-    for i in range(0, num_cidades):
-        indice_cidades.append(i)
+    initialRoute = []
+    for i in range(numCities):
+        initialRoute.append(i)
 
-    for i in range(0, qtde_individuos):
-        populacao_inicial.append(random.sample(indice_cidades, num_cidades))
+    for i in range(numInd):
+        initialPopulation.append(random.sample(initialRoute, numCities))
 
-    populacao_inicial = np.array(populacao_inicial)
+    initialPopulation = np.array(initialPopulation)
 
-    return populacao_inicial
+    return initialPopulation
 
 
 # avalia a populacao por meio da distancia euclicidiana
-def avaliar_populacao(populacao, cidade, qtde_individuos, num_cidades):
+def avaliar_populacao(populacao, city, qtde_individuos, numCities):
 
     # f armazena a distancia total de cada individuo da populacao
     f = []
 
     #para cada individuo da populacao, calcular distancia total
     for i in range(0, qtde_individuos):
-        seq_cidades = populacao[i]
+        seq_citys = populacao[i]
         distancia = 0
-        for j in range(1, num_cidades):
-            aux = math.pow(cidade[seq_cidades[j]][0] - cidade[seq_cidades[j - 1]][0], 2) + \
-                  math.pow(cidade[seq_cidades[j]][1] - cidade[seq_cidades[j - 1]][1], 2)
+        for j in range(1, numCities):
+            aux = math.pow(city[seq_citys[j]][0] - city[seq_citys[j - 1]][0], 2) + \
+                  math.pow(city[seq_citys[j]][1] - city[seq_citys[j - 1]][1], 2)
             distancia += math.sqrt(aux)
 
-        # calcular a distância da última cidade visitada com a cidade de origem
-        aux = math.pow(cidade[seq_cidades[num_cidades - 1]][0] - cidade[seq_cidades[0]][0], 2) + \
-              math.pow(cidade[seq_cidades[num_cidades - 1]][1] - cidade[seq_cidades[0]][1], 2)
+        # calcular a distância da última city visitada com a city de origem
+        aux = math.pow(city[seq_citys[numCities - 1]][0] - city[seq_citys[0]][0], 2) + \
+              math.pow(city[seq_citys[numCities - 1]][1] - city[seq_citys[0]][1], 2)
         distancia += math.sqrt(aux)
 
         f.append(distancia)
@@ -131,7 +115,7 @@ def selecionar(populacao, f):
     return nova_populacao
 
 # aplica crossover na populacao
-def reproduzir(populacao, qtde_individuos, num_cidades, prob_crossover, prob_mutacao):
+def reproduzir(populacao, qtde_individuos, numCities, probCross, probMut):
 
     # aplica crossover
     i = 0
@@ -140,32 +124,32 @@ def reproduzir(populacao, qtde_individuos, num_cidades, prob_crossover, prob_mut
         r = random.random()
 
         # condição para haver crossover
-        if r <= prob_crossover:
-            populacao = crossover(populacao, num_cidades, i)
+        if r <= probCross:
+            populacao = crossover(populacao, numCities, i)
 
         i += 2
 
     # aplica mutacao
     for i in range(0, qtde_individuos):
-        for j in range(0, 0, num_cidades):
+        for j in range(0, 0, numCities):
             r = random.random()
 
             # condicao para haver mutacao
-            if r <= prob_mutacao:
-                # seleciona duas cidades da populacao
-                cidade1 = random.randint(0, num_cidades - 1)
-                cidade2 = random.randint(0, num_cidades - 1)
+            if r <= probMut:
+                # seleciona duas citys da populacao
+                city1 = random.randint(0, numCities - 1)
+                city2 = random.randint(0, numCities - 1)
 
-                #permuta os indices de cidade1 e cidade 2 no individuo
-                populacao[i][cidade1] = cidade2
-                populacao[i][cidade2] = cidade1
+                #permuta os indices de city1 e city 2 no individuo
+                populacao[i][city1] = city2
+                populacao[i][city2] = city1
 
     return populacao
 
 
-def crossover(populacao, num_cidades, i):
+def crossover(populacao, numCities, i):
 
-    cp = random.randint(1, num_cidades - 2)
+    cp = random.randint(1, numCities - 2)
 
     pai1 = populacao[i]
     pai2 = populacao[i + 1]
@@ -176,13 +160,13 @@ def crossover(populacao, num_cidades, i):
     # gerar pai1
     for j in range(0, cp):
         pai1[j] = aux[j]
-    for j in range(cp, num_cidades):
+    for j in range(cp, numCities):
         pai1[j] = pai2[j]
 
     # gerar pai2
     for j in range(0, cp):
         pai2[j] = pai2[j]
-    for j in range(cp, num_cidades):
+    for j in range(cp, numCities):
         pai2[j]= aux[j]
 
     populacao[i] = pai1
@@ -192,7 +176,21 @@ def crossover(populacao, num_cidades, i):
 
 
 def main():
-    caixeiro_viajante()
+    # number of iterations
+    numIter = 25
+
+    # crossover and mutation rate
+    probCross = 0.6
+    probMut = 0.02
+    
+    # size of the population
+    numInd = 30
+    
+    # read file with city coordinates which each line represents the coordinate x and y of a city
+    city = np.loadtxt('cities.csv', delimiter=',')
+
+    # measure the shortest route
+    TravellingSalesman(city, numIter, probCross, probMut, numInd)
 
 if __name__ == "__main__":
     main()

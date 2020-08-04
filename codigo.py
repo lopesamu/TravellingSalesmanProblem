@@ -16,8 +16,8 @@ def TravellingSalesman(city, numIter, probCross, probMut, numInd):
     t = 0
 
     while t < numIter:
-        # selecionar os individuos mais aptos (menor distancia percorrida)
-        population = selecionar(population, f)
+        # select os individuos mais aptos (menor distancia percorrida)
+        population = Select(population, f)
 
         # aplicar crossover e mutacao
         population = reproduzir(population, numInd, numCities, probCross, probMut)
@@ -66,7 +66,7 @@ def RouteDistance(route, city, numCities):
     return distance
 
 
-# function that evaluates the population by means of euclidean distance
+# function that evaluates the population by means of euclidean distance - OK
 def EvaluatePopulation(population, city, numInd, numCities):
 
     # f stores the total distance of each individual from population
@@ -80,42 +80,42 @@ def EvaluatePopulation(population, city, numInd, numCities):
     return f
 
 
-# seleciona os individuos mais aptos via torneio e elitismo
-def selecionar(population, f):
-
-    # selecionar o individuo mais apto via elitismo
-    ind_nova_population = []
-
-    for i in range(0, len(f)):
+# function that selects the most suitable individuals - OK
+def Select(population, f):
+    
+    indNewPopulation = []
+    
+    # select the shortest route through Elitism
+    for i in range(len(f)):
         if f[i] == min(f):
-            ind_nova_population.append(i)
+            indNewPopulation.append(i)
             break
 
-    # selecionar os individuos mais aptos via torneio
+    # select routes through Tournament (n = 3)
     for i in range(1, len(f)):
-        # sortear três individuos da população atual
+        # draw n individuals from the current population
         n = 3
-        sorteio = []
-        for j in range(0, n):
-            sorteio.append(random.randint(0, len(f) - 1))
+        draw = random.sample(range(len(f)),n)
 
-        # dentre os individuos sorteados, escolher o que possui maior aptidão
-        menor = f[sorteio[0]]
-        ind_menor = sorteio[0]
-        for j in range(0, n):
-            if menor < f[sorteio[j]]:
-                menor = f[sorteio[j]]
-                ind_menor = sorteio[j]
+        # between the selected individuals, choose the one with the shortest distance
+        menor = f[draw[0]]
+        indShortest = draw[0]
+        for j in range(1, n):
+            if menor > f[draw[j]]:
+                menor = f[draw[j]]
+                indShortest = draw[j]
 
-        # inserir o indice deste individuo em ind_nova_população
-        ind_nova_population.append(ind_menor)
+        # indNewPopulation stores the indices of the new population
+        indNewPopulation.append(indShortest)
 
-    # gerar a nova population
-    nova_population = []
-    for i in range(0, len(ind_nova_population)):
-        nova_population.append(population[ind_nova_population[i]])
+    # create the new population
+    newPopulation = []
+    for i in range(0, len(indNewPopulation)):
+        newPopulation.append(population[indNewPopulation[i]])
+    newPopulation = np.array(newPopulation)
 
-    return nova_population
+    return newPopulation
+
 
 # aplica crossover na population
 def reproduzir(population, numInd, numCities, probCross, probMut):
@@ -183,8 +183,8 @@ def main():
     numIter = 25
 
     # crossover and mutation rate
-    probCross = 0.6
-    probMut = 0.02
+    probCross = 0.9
+    probMut = 0.4
     
     # size of the population
     numInd = 30

@@ -1,21 +1,44 @@
-import math 
 import numpy as np
+import random
 
-city = np.array([[1,1],[2,2],[3,3]])
-numCities = len(city)
-route = np.array([2,0,1])
+f = np.array([3,2,4])
+population = np.array([[1,2,3,0],[0,1,2,3],[3,2,1,4],[1,3,2,0]])
 
-# function that calculates the route's distance
-def RouteDistance(route, city, numCities):
-    distance = 0
-    for i in range(1, numCities):
-        aux = math.pow(city[route[i]][0] - city[route[i - 1]][0], 2) + math.pow(city[route[i]][1] - city[route[i - 1]][1], 2)
-        distance += math.sqrt(aux)
+# function that selects the most suitable individuals 
+def Select(population, f):
+    
+    indNewPopulation = []
+    
+    # select the shortest route through Elitism
+    for i in range(len(f)):
+        if f[i] == min(f):
+            indNewPopulation.append(i)
+            break
 
-    # calculate the distance from the last city visited to the city of origin
-    aux = math.pow(city[route[numCities - 1]][0] - city[route[0]][0], 2) + math.pow(city[route[numCities - 1]][1] - city[route[0]][1], 2)
-    distance += math.sqrt(aux)
+    # select routes through Tournament (n = 3)
+    for i in range(1, len(f)):
+        # draw n individuals from the current population
+        n = 3
+        draw = random.sample(range(len(f)),n)
 
-    return distance
+        # between the selected individuals, choose the one with the shortest distance
+        menor = f[draw[0]]
+        indShortest = draw[0]
+        for j in range(1, n):
+            if menor > f[draw[j]]:
+                menor = f[draw[j]]
+                indShortest = draw[j]
 
-RouteDistance(route, city, numCities)
+        # indNewPopulation stores the indices of the new population
+        indNewPopulation.append(indShortest)
+
+    # create the new population
+    newPopulation = []
+    for i in range(0, len(indNewPopulation)):
+        newPopulation.append(population[indNewPopulation[i]])
+    newPopulation = np.array(newPopulation)
+
+    return newPopulation
+
+
+Select(population, f)

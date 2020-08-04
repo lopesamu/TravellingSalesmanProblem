@@ -1,3 +1,6 @@
+#database used: burma14.tsp
+#shortest route: 30.878500
+
 # libraries used
 import numpy as np
 import random
@@ -18,9 +21,9 @@ def TravellingSalesman(city, numIter, probCross, probMut, numInd):
     while t < numIter:
         # select os individuos mais aptos (menor distancia percorrida)
         population = Select(population, f)
-
+        
         # aplicar crossover e mutacao
-        population = reproduzir(population, numInd, numCities, probCross, probMut)
+        population = Reproduce(population, numInd, numCities, probCross, probMut)
 
         # avaliar a population gerada
         f = EvaluatePopulation(population, city, numInd, numCities)
@@ -84,7 +87,7 @@ def EvaluatePopulation(population, city, numInd, numCities):
 def Select(population, f):
     
     indNewPopulation = []
-    
+
     # select the shortest route through Elitism
     for i in range(len(f)):
         if f[i] == min(f):
@@ -118,7 +121,7 @@ def Select(population, f):
 
 
 # aplica crossover na population
-def reproduzir(population, numInd, numCities, probCross, probMut):
+def Reproduce(population, numInd, numCities, probCross, probMut):
 
     # aplica crossover
     i = 0
@@ -180,7 +183,7 @@ def crossover(population, numCities, i):
 
 def main():
     # number of iterations
-    numIter = 25
+    numIter = 100
 
     # crossover and mutation rate
     probCross = 0.9
